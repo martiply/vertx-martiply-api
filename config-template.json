@@ -1,0 +1,32 @@
+{
+  "port" : 8066,
+  "timezone" : "Asia/Jakarta",
+  "database" : {
+    "host" : "35.240.190.251",
+    "port" : 3306,
+    "maxPoolSize" : 50,
+    "username" : "root",
+    "password" : "pass",
+    "database" : "main",
+    "queryTimeout" : 10000,
+    "sslMode" : "require",
+
+    "pool" : {
+      "maxObjects" : 100,
+      "maxIdleMin" : 15,
+      "maxQueueSize": 10000,
+      "validationIntervalSec" : 30
+    },
+    "query" : {
+      "limit" : 100
+    }
+  },
+  "paths" : {
+    "GET_AREA_STORES"     : "/2",
+    "SEARCH_AREA_KEYWORD" : "/3",
+    "GET_STORE"           : "/4",
+    "SEARCH_STORE_KEYWORD": "/6",
+    "SEARCH_STORE_RANDOM" : "/7"
+  }
+}
+
