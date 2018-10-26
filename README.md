@@ -5,8 +5,24 @@ java -jar <path to fat jar> <path to log>
 ```
 
 ## Requirements
-- Martiply Google SQL access
-- if there's change in config, create `.conf` and put the new `config.json` (see config-template.json) in it
+- Martiply Google SQL access to server's IP
+
+### Live
+- create a conf folder, export this as env variable `VERTX_CONFIG_PATH` (in Linux add export line to `~/.bashrc)
+- paste config.json into it (see config-template.json)
+
+### Systemd
+- Systemd process uses its own environment variables. Check cheatsheet how to do it
+
+### Docker
+- Create an SSH key and paste id_rsa.pub at the repo's Access Keys
+    - `ssh-keygen -t rsa -C "your_email@example.com"`
+- Create a folder. Put `Dockerfile` in this project, `config.json`, and `id_rsa` (from `~/.ssh/id_rsa`) in it
+- build the image
+    - `docker build -t martiply:customtag .`
+- run the container
+    - `docker run -d -p <server's listening port>:<app's listening port inside> -t theimage`
+
 
 ## Notes
 - ResultSet of this lib doesn't support get by types or get("xxx.yyy") form

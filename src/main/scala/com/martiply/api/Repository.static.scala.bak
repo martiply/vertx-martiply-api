@@ -208,7 +208,6 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject) 
     for {
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
-        fque.getRows.columnNames().forEach(println)
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
 
           val imgStores = Repository.imgFrom(r, "urls")

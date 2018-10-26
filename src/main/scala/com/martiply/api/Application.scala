@@ -12,6 +12,7 @@ import io.vertx.scala.core.http.HttpServerRequest
 import io.vertx.scala.core.{DeploymentOptions, Vertx}
 import me.mbcu.scala.{MyLogging, MyLoggingSingle}
 
+import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
 object Application extends App {
@@ -41,7 +42,7 @@ object Application extends App {
       vertx.deployVerticle(new ServerVerticle, DeploymentOptions().setConfig(conf))
 
     case Failure(e) =>
-      println(e.getMessage)
+      println("If you see Config file path: path to config.json, format:json then the problem is Database access or Servlet server : " + e.getMessage)
       System.exit(0)
   }
 
@@ -57,7 +58,7 @@ object Application extends App {
         req.response().putHeader("content-type", "application/json")
         req.path() match {
 
-          case p if p.contains("/") =>   req.response().sendFile("web/index.json");
+          case p if p.contains("/") =>   req.response().sendFile(getClass.getClassLoader.getResource("index.json").getPath)
 
           case p if p contains cPaths.getString("SEARCH_AREA_KEYWORD") =>
             val kwd = req.getParam("keyword")
