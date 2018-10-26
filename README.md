@@ -8,8 +8,11 @@ java -jar <path to fat jar> <path to log>
 - Martiply Google SQL access to server's IP
 
 ### Live
-- create a conf folder, export this as env variable `VERTX_CONFIG_PATH` (in Linux add export line to `~/.bashrc)
-- paste config.json into it (see config-template.json)
+- Both live and systemd daemon require fat jar built from `sbt-assembly`
+- Vertx config reads from create environment variables. Create a conf folder, export this as env variable `VERTX_CONFIG_PATH` (in Linux add export line to `~/.bashrc)
+- Paste config.json into it (see config-template.json)
+- Create a log folder
+- Run `java -jar <appjar>.jar <log dir>`
 
 ### Systemd
 - Systemd process uses its own environment variables. Check cheatsheet how to do it
@@ -19,10 +22,9 @@ java -jar <path to fat jar> <path to log>
     - `ssh-keygen -t rsa -C "your_email@example.com"`
 - Create a folder. Put `Dockerfile` in this project, `config.json`, and `id_rsa` (from `~/.ssh/id_rsa`) in it
 - build the image
-    - `docker build -t martiply:customtag .`
+    - `docker build -t martiply:customtag .` customtag = version or commit hash
 - run the container
     - `docker run -d -p <server's listening port>:<app's listening port inside> -t theimage`
-
 
 ## Notes
 - ResultSet of this lib doesn't support get by types or get("xxx.yyy") form

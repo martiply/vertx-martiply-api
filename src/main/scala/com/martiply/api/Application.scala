@@ -58,7 +58,7 @@ object Application extends App {
         req.response().putHeader("content-type", "application/json")
         req.path() match {
 
-          case p if p.contains("/") =>   req.response().sendFile(getClass.getClassLoader.getResource("index.json").getPath)
+          case p if p.contains("/") =>   req.response().end("{\"message\":\"Martiply API\"}")
 
           case p if p contains cPaths.getString("SEARCH_AREA_KEYWORD") =>
             val kwd = req.getParam("keyword")

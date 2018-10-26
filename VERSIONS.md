@@ -1,3 +1,6 @@
+0.1.7
+- removed resources
+
 0.1.6
 - moved web to resources
 - added Dockerfile
