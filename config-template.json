@@ -1,6 +1,7 @@
 {
   "port" : 8066,
   "timezone" : "Asia/Jakarta",
+  "imgHost": "https://storage.googleapis.com/martiply/",
   "database" : {
     "host" : "35.240.190.251",
     "port" : 3306,

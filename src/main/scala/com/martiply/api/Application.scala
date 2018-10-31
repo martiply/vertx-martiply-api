@@ -12,7 +12,6 @@ import io.vertx.scala.core.http.HttpServerRequest
 import io.vertx.scala.core.{DeploymentOptions, Vertx}
 import me.mbcu.scala.{MyLogging, MyLoggingSingle}
 
-import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
 object Application extends App {
@@ -28,7 +27,8 @@ object Application extends App {
   val f1 = for {
     fcnf <- retriever.getConfigFuture()
     frep <- {
-      val rep = Repository(fcnf.getJsonObject("database"))
+      val imgHost = fcnf.getString("imgHost")
+      val rep = Repository(fcnf.getJsonObject("database"), imgHost)
       rep.testConnection()
     }
   } yield (fcnf, frep)

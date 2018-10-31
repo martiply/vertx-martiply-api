@@ -1,6 +1,6 @@
 package com.martiply.api.model
 
-import com.martiply.model.interfaces.{IImg, IStore}
+import com.martiply.model.interfaces.{AbsImg, IStore}
 
 object Store {
   def apply(storeId: Int, name: String, zip: String, address: String, email: String, phone: String, lng: Double, lat: Double, open: String, close: String, distance: Option[Double],
@@ -42,7 +42,7 @@ class Store(storeId: Int, name: String, zip: String, address: String, email: Str
 
   override def getCity: String = city
 
-  override def getImg: IImg = img
+  override def getImg: AbsImg = img
 
   override def getEmail: String = email
 }

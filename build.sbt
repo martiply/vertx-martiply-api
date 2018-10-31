@@ -2,7 +2,7 @@ import sbtassembly.PathList
 
 name := "vertx-martiply-api"
 
-version := "0.1.7"
+version := "0.1.8"
 
 scalaVersion := "2.12.7"
 lazy val vertxVersion = "3.5.4"
@@ -27,7 +27,7 @@ libraryDependencies += "com.github.jasync-sql" % "jasync-mysql" % "0.8.41"
 libraryDependencies += "org.scala-lang.modules" % "scala-java8-compat_2.12" % "0.9.0"
 libraryDependencies += "com.jsoniter" % "jsoniter" % "0.9.23"
 libraryDependencies += "com.github.inmyth" % "scala-mylogging" % "26b5b2c"
-libraryDependencies += "com.github.martiply" % "java-martiply-model" % "259a07c"
+libraryDependencies += "com.github.martiply" % "java-martiply-model" % "ad1a8a6"
 libraryDependencies += "com.github.martiply" % "java-martiply-table" % "a22ad24"
 
 assemblyMergeStrategy in assembly := {

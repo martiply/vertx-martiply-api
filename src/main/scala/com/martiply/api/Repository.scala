@@ -18,9 +18,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object Repository {
-  def apply(mySqlConf: JsonObject): Repository = {
+  def apply(mySqlConf: JsonObject, imgHost: String): Repository = {
     val con = buildClient(mySqlConf)
-    new Repository(con, mySqlConf.getJsonObject("query"))
+    new Repository(con, mySqlConf.getJsonObject("query"), imgHost)
   }
 
   def buildClient(mySqlConf: JsonObject): ConnectionPool[MySQLConnection] = {
@@ -138,7 +138,7 @@ object Repository {
 
 }
 
-class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject) {
+class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, imgHost: String) {
   val limit: Integer = queryCfg.getInteger("limit")
 
   def terminate(): Future[Connection] = FutureConverters.toScala(client.disconnect())
@@ -180,7 +180,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject) 
           val store    = Repository.storeFrom(r, imgStore, distance)
           IPP(item, store)
         }).toList
-        MtpResponse.success(res)
+        MtpResponse.success(res, imgHost)
       }
     } yield fpar
 
@@ -197,7 +197,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject) 
           val distance  = Some(r.get("distance_in_meters").asInstanceOf[Double])
           Repository.storeFrom(r, imgStores, distance)
         }).toList
-        MtpResponse.success(res)
+        MtpResponse.success(res, imgHost)
       }
     } yield fpar
   }
@@ -214,7 +214,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject) 
           val distance  = None
           Repository.storeFrom(r, imgStores, distance)
         }).toList
-        MtpResponse.success(res)
+        MtpResponse.success(res, imgHost)
       }
     } yield fpar
 
@@ -242,7 +242,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject) 
           val sale    = Repository.saleFrom(r)
           Repository.itemFrom(r, sale, imgItem, TableStandard.ID, TableStandard.NAME)
         }).toList
-        MtpResponse.success(res)
+        MtpResponse.success(res, imgHost)
       }
     } yield fpar
   }

@@ -2,7 +2,7 @@ package com.martiply.api.model
 
 import com.jsoniter.annotation.JsonProperty
 import com.martiply.model.interfaces.IItem.{Category, Condition, IdType}
-import com.martiply.model.interfaces.{IApparelExtension, IImg, IItem, ISale}
+import com.martiply.model.interfaces.{AbsImg, IApparelExtension, IItem, ISale}
 
 object Item {
 
@@ -53,5 +53,5 @@ class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: Str
 
   override def getSale: ISale = sale
 
-  override def getImg: IImg = img
+  override def getImg: AbsImg = img
 }

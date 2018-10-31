@@ -2,7 +2,7 @@ package com.martiply.api.model
 
 import java.util
 
-import com.martiply.model.interfaces.IImg
+import com.martiply.model.interfaces.AbsImg
 
 object Img {
   import scala.collection.JavaConverters._
@@ -12,7 +12,7 @@ object Img {
 
 }
 
-class Img(urls: util.List[String]) extends IImg {
+class Img(urls: util.List[String]) extends AbsImg {
 
   override def getUrls: util.List[String] = urls
 
