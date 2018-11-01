@@ -1,3 +1,6 @@
+0.1.9
+- moved imgHost to AbsImg
+
 0.1.8
 -added imgHost
 

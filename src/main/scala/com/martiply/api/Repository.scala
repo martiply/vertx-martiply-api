@@ -8,6 +8,7 @@ import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.pool.{ConnectionPool, PoolConfiguration}
 import com.github.jasync.sql.db.{Configuration, Connection, SSLConfiguration}
 import com.martiply.api.model._
+import com.martiply.model.interfaces.AbsImg.Root
 import com.martiply.model.interfaces.IItem.{Category, Condition, IdType}
 import com.martiply.table._
 import io.vertx.core.json.JsonObject
@@ -116,9 +117,9 @@ object Repository {
     }
   }
 
-  def imgFrom(r: ArrayRowData, imgAlias: String): Option[Img] =
+  def imgFrom(r: ArrayRowData, imgAlias: String, imgHost: String, root: Root): Option[Img] =
     Option(r.get(imgAlias)) match {
-      case Some(s) => Some(Img(s.asInstanceOf[String].split(",").toList))
+      case Some(s) => Some(Img(s.asInstanceOf[String].split(",").toList, imgHost, root))
       case _ => None
     }
 
@@ -172,15 +173,15 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgItem  = Repository.imgFrom(r, "urli")
+          val imgItem  = Repository.imgFrom(r, "urli", imgHost, Root.i)
           val sale     = Repository.saleFrom(r)
           val item     = Repository.itemFrom(r, sale, imgItem, "standard_id", "standard_name")
-          val imgStore = Repository.imgFrom(r, "urls")
+          val imgStore = Repository.imgFrom(r, "urls", imgHost, Root.store)
           val distance = Some(r.get("distance_in_meters").asInstanceOf[Double])
           val store    = Repository.storeFrom(r, imgStore, distance)
           IPP(item, store)
         }).toList
-        MtpResponse.success(res, imgHost)
+        MtpResponse.success(res)
       }
     } yield fpar
 
@@ -193,11 +194,11 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgStores = Repository.imgFrom(r, "urls")
+          val imgStores = Repository.imgFrom(r, "urls", imgHost, Root.store)
           val distance  = Some(r.get("distance_in_meters").asInstanceOf[Double])
           Repository.storeFrom(r, imgStores, distance)
         }).toList
-        MtpResponse.success(res, imgHost)
+        MtpResponse.success(res)
       }
     } yield fpar
   }
@@ -209,12 +210,11 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-
-          val imgStores = Repository.imgFrom(r, "urls")
+          val imgStores = Repository.imgFrom(r, "urls", imgHost, Root.store)
           val distance  = None
           Repository.storeFrom(r, imgStores, distance)
         }).toList
-        MtpResponse.success(res, imgHost)
+        MtpResponse.success(res)
       }
     } yield fpar
 
@@ -238,11 +238,11 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgItem = Repository.imgFrom(r, "urli")
+          val imgItem = Repository.imgFrom(r, "urli", imgHost, Root.i)
           val sale    = Repository.saleFrom(r)
           Repository.itemFrom(r, sale, imgItem, TableStandard.ID, TableStandard.NAME)
         }).toList
-        MtpResponse.success(res, imgHost)
+        MtpResponse.success(res)
       }
     } yield fpar
   }
