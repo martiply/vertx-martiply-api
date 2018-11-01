@@ -1,3 +1,6 @@
+0.2.0
+- added item price
+
 0.1.9
 - moved imgHost to AbsImg
 

@@ -75,7 +75,7 @@ object Repository {
 
   val qsSearchStoreKeyword: Int => String = (limit: Int ) =>
     s"""
-       |SELECT standard.*, standard_sale.*, store.currency, CONCAT(urli) AS urli, MATCH (standard.name, standard.category, standard.brand) AGAINST (?) as score  FROM inventory
+       |SELECT standard.*, standard_sale.*, store.currency, CONCAT(urli) AS urli, MATCH (standard.name, standard.category, standard.brand) AGAINST (?) as score FROM inventory
        |JOIN store ON inventory.storeId = store.storeId
        |JOIN standard ON inventory.id = standard.id
        |LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd FROM standard_sale WHERE standard_sale.saleStart < ? AND standard_sale.saleEnd > ?) AS standard_sale ON standard.id = sale_id
@@ -125,7 +125,7 @@ object Repository {
 
   def itemFrom(r: ArrayRowData, sale: Option[Sale], img: Option[Img],  standardIdAlias: String, standardNameAlias: String): Item =
     Item(r.get(standardIdAlias).asInstanceOf[String], r.get(TableStandard.OWNER_ID).asInstanceOf[Int], Item.findIdType(r.get(TableStandard.ID_TYPE).asInstanceOf[String]).getOrElse(IdType.custom),
-      r.get(TableStandard.ID_CUSTOM).asInstanceOf[String], r.get(TableStandard.GTIN).asInstanceOf[String], r.get(standardNameAlias).asInstanceOf[String], Item.findCategory(r.get(TableStandard.CATEGORY).asInstanceOf[String]).getOrElse(Category.product),
+      r.get(TableStandard.ID_CUSTOM).asInstanceOf[String], r.get(TableStandard.GTIN).asInstanceOf[String], r.get(standardNameAlias).asInstanceOf[String], r.get(TableStandard.PRICE).asInstanceOf[Float], Item.findCategory(r.get(TableStandard.CATEGORY).asInstanceOf[String]).getOrElse(Category.product),
       r.get(TableStandard.BRAND).asInstanceOf[String], Item.findCondition(r.get(TableStandard.COND).asInstanceOf[String]).getOrElse(Condition.NEW), r.get(TableStandard.DESCRIPTION).asInstanceOf[String], r.get(TableStandard.URL).asInstanceOf[String],
       img.orNull, r.get(TableStandard.HIT).asInstanceOf[Int], sale, None)
 

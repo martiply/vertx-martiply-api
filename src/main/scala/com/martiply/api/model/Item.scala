@@ -6,9 +6,9 @@ import com.martiply.model.interfaces.{AbsImg, IApparelExtension, IItem, ISale}
 
 object Item {
 
-  def apply(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, category: Category, brand: String,
+  def apply(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: Float, category: Category, brand: String,
             condition: Condition, description: String, url: String, img: Img, hits: Int, sale: Option[Sale], apparelExtension: Option[ApparelExtension]): Item =
-    new Item(id, ownerId, idType, idCustom, gtin, name, category, brand, condition, description, url, img, hits, sale.orNull, apparelExtension.orNull)
+    new Item(id, ownerId, idType, idCustom, gtin, name, price, category, brand, condition, description, url, img, hits, sale.orNull, apparelExtension.orNull)
 
 
   def findCategory(in: String) : Option[Category] = Category.values().find(p => in.startsWith(p.toString))
@@ -20,7 +20,7 @@ object Item {
 
 }
 
-class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, category: Category, brand: String,
+class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: Float, category: Category, brand: String,
            condition: Condition, description: String, url: String, img: Img, hits: Int,
            sale: Sale,
            @JsonProperty(defaultValueToOmit = "null") apparelExtension: ApparelExtension) extends IItem{
@@ -54,4 +54,6 @@ class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: Str
   override def getSale: ISale = sale
 
   override def getImg: AbsImg = img
+
+  override def getPrice: Float = price
 }
