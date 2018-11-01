@@ -1,3 +1,6 @@
+0.2.2
+- changed x to xl
+
 0.2.1
 - fixed lnglat
 
