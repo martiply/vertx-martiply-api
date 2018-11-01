@@ -1,3 +1,6 @@
+0.2.1
+- fixed lnglat
+
 0.2.0
 - added item price
 

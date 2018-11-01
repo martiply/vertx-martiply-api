@@ -36,7 +36,8 @@ java -jar <path to fat jar> <path to log>
 
 ## TODO
 - Add categoryCode column to match category. Do not use LIKE "%culinary%", it will do full table scan
-- wait until mysql lib supports returning specific data types especially for GEO
+- ~wait until mysql lib supports returning specific data types especially for GEO~
+- order serialized json fields
 
 ## Scale Up
 - ApparelExtension is activated if we have apparel stores

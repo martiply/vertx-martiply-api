@@ -130,7 +130,7 @@ object Repository {
       img.orNull, r.get(TableStandard.HIT).asInstanceOf[Int], sale, None)
 
   def storeFrom(r: ArrayRowData, img: Option[Img], distance: Option[Double], geoAlias: String = "geo"): Store ={
-    val lnglat = r.get(geoAlias).asInstanceOf[String]
+    val lnglat = Store.toLngLat(r.get(geoAlias).asInstanceOf[String])
     Store(r.get(TableStore.STORE_ID).asInstanceOf[Int], r.get(TableStore.NAME).asInstanceOf[String], r.get(TableStore.ZIP).asInstanceOf[String], r.get(TableStore.ADDRESS).asInstanceOf[String],
       r.get(TableStore.EMAIL).asInstanceOf[String], r.get(TableStore.PHONE).asInstanceOf[String], lnglat.head, lnglat(1),
       r.get(TableStore.OPEN).asInstanceOf[String], r.get(TableStore.CLOSE).asInstanceOf[String], distance, r.get(TableStore.STORY).asInstanceOf[String],

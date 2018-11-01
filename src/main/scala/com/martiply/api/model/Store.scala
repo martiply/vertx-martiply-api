@@ -1,5 +1,6 @@
 package com.martiply.api.model
 
+import com.jsoniter.annotation.JsonProperty
 import com.martiply.model.interfaces.{AbsImg, IStore}
 
 object Store {
@@ -13,6 +14,7 @@ object Store {
 
 class Store(storeId: Int, name: String, zip: String, address: String, email: String, phone: String, lng: Double, lat: Double, open: String, close: String, distance: Double,
             story: String, currency: String, tz: Int, city: String, img: Img) extends IStore {
+
 
   override def getStoreId: Int = storeId
 
