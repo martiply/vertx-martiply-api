@@ -1,3 +1,6 @@
+0.2.3
+- added did (deviceid) and apikey params
+
 0.2.2
 - changed x to xl
 
