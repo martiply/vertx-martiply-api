@@ -84,6 +84,7 @@ project/plugins/project/
 .DS_Store
 
 # other
+.vertx
 .history
 .scala_dependencies
 .cache
