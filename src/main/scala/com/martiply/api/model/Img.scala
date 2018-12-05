@@ -12,9 +12,9 @@ object Img {
 
 }
 
-class Img(urls: util.List[String], imgHost: String, root: Root) extends AbsImg {
+class Img(paths: util.List[String], imgHost: String, root: Root) extends AbsImg {
 
-  override def getUrls: util.List[String] = urls
+  override def getPaths: util.List[String] = paths
 
   override def getImgHost: String = imgHost
 

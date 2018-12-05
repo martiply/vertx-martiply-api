@@ -54,7 +54,7 @@ store.story, store.tz,
 
 standard_id, standard.ownerId, standard.idType, standard.gtin, standard.idCustom, standard.brand,
 standard_name, standard.cond, standard.category, standard.price, standard.description, standard.url,
-standard.hit, sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd, urli, urls,
+standard.hit, sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd, pathi, paths,
 score,
 
 ST_Distance_Sphere(point(107.615815, -6.906917), geo) as distance_in_meters FROM store AS store
@@ -63,14 +63,14 @@ JOIN inventory ON inventory.storeId = store.storeId
 JOIN (SELECT standard.id AS standard_id, standard.ownerId, standard.idType, standard.gtin,
   standard.idCustom, standard.brand, standard.name AS standard_name, standard.cond, standard.category,
   standard.price, standard.description, standard.url, standard.hit,
-  MATCH (standard.name, standard.category, standard.brand) AGAINST('beef') as score FROM standard
-  WHERE MATCH (standard.name, standard.category, standard.brand) AGAINST('beef'))  AS standard ON inventory.id = standard_id
+  MATCH (standard.name, standard.category, standard.brand) AGAINST('chicken') as score FROM standard
+  WHERE MATCH (standard.name, standard.category, standard.brand) AGAINST('chicken'))  AS standard ON inventory.id = standard_id
 
 LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd
-  FROM standard_sale WHERE standard_sale.saleStart < 1459792022 AND standard_sale.saleEnd > 1459792022 ) AS standard_sale
+  FROM standard_sale WHERE standard_sale.saleStart < 1544013445 AND standard_sale.saleEnd > 1544013445 ) AS standard_sale
   ON standard_id = sale_id
-LEFT JOIN (SELECT img_standard.id, GROUP_CONCAT(img_standard.url) urli FROM img_standard GROUP BY img_standard.id) as img_standard ON img_standard.id = standard_id
-LEFT JOIN (SELECT img_store.storeId, GROUP_CONCAT( img_store.url) urls FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId
+LEFT JOIN (SELECT img_standard.id, GROUP_CONCAT(img_standard.path ORDER BY ts ASC) pathi FROM img_standard GROUP BY img_standard.id) as img_standard ON img_standard.id = standard_id
+LEFT JOIN (SELECT img_store.storeId, GROUP_CONCAT( img_store.path ORDER BY ts ASC) paths FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId
 
 WHERE ST_Within(geo, ST_Buffer(POINT(107.615815, -6.906917), 0.020)) ORDER BY distance_in_meters, score LIMIT 100) AS d
 ```
@@ -79,11 +79,11 @@ WHERE ST_Within(geo, ST_Buffer(POINT(107.615815, -6.906917), 0.020)) ORDER BY di
 - searchStoreKeyword(kwd: String, storeId: Int, legitSaleTs: Long)
 
 ```
-SELECT standard.*, standard_sale.*, store.currency, CONCAT(urli) AS urli FROM inventory
+SELECT standard.*, standard_sale.*, store.currency, CONCAT(pathi) AS pathi FROM inventory
 JOIN store ON inventory.storeId = store.storeId
 JOIN standard ON inventory.id = standard.id
 LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd FROM standard_sale WHERE standard_sale.saleStart < 1540229836 AND standard_sale.saleEnd > 1540229836) AS standard_sale ON standard.id = sale_id
-LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.url) urli FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
+LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.path ORDER BY ts ASC) pathi FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
 WHERE inventory.storeId = 10009
 AND MATCH (standard.name, standard.category, standard.brand) AGAINST ('fish')
 
@@ -91,11 +91,11 @@ AND MATCH (standard.name, standard.category, standard.brand) AGAINST ('fish')
 
 - searchStoreRandom(storeId: Int, legitSaleTs: Long)
 ```
-SELECT standard.*, standard_sale.*, store.currency, CONCAT(urli) AS urli FROM inventory
+SELECT standard.*, standard_sale.*, store.currency, CONCAT(pathi) AS pathi FROM inventory
 JOIN store ON inventory.storeId = store.storeId
 JOIN standard ON inventory.id = standard.id
 LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd FROM standard_sale WHERE standard_sale.saleStart < 1459792022 AND standard_sale.saleEnd > 1459792022) AS standard_sale ON standard.id = sale_id
-LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.url) urli FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
+LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.path ORDER BY ts ASC) pathi FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
 WHERE inventory.storeId = 10009
 ORDER BY RAND() LIMIT 100
 ```
@@ -103,9 +103,9 @@ ORDER BY RAND() LIMIT 100
 - getStores(lat: Double, lng: Double)
 
 ```
-SELECT storeId, name, astext(geo) as geo, currency, email, zip, address, city, phone, open, close, story, tz, urls, distance_in_meters
-FROM (SELECT store.*, CONCAT(urls) AS urls, ST_Distance_Sphere(point(107.615815, -6.906917), geo) as distance_in_meters FROM store AS store
-LEFT JOIN (SELECT storeId, GROUP_CONCAT(url) urls FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId) AS img_store
+SELECT storeId, name, astext(geo) as geo, currency, email, zip, address, city, phone, open, close, story, tz, paths, distance_in_meters
+FROM (SELECT store.*, CONCAT(paths) AS paths, ST_Distance_Sphere(point(107.615815, -6.906917), geo) as distance_in_meters FROM store AS store
+LEFT JOIN (SELECT storeId, GROUP_CONCAT(path) paths FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId) AS img_store
 WHERE ST_Within(geo, ST_Buffer(POINT(107.615815, -6.906917), 0.020)) ORDER BY distance_in_meters LIMIT 100
 
 ```

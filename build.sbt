@@ -2,7 +2,7 @@ import sbtassembly.PathList
 
 name := "vertx-martiply-api"
 
-version := "0.2.3"
+version := "0.2.4"
 
 scalaVersion := "2.12.7"
 lazy val vertxVersion = "3.5.4"
@@ -27,8 +27,8 @@ libraryDependencies += "com.github.jasync-sql" % "jasync-mysql" % "0.8.41"
 libraryDependencies += "org.scala-lang.modules" % "scala-java8-compat_2.12" % "0.9.0"
 libraryDependencies += "com.jsoniter" % "jsoniter" % "0.9.23"
 libraryDependencies += "com.github.inmyth" % "scala-mylogging" % "26b5b2c"
-libraryDependencies += "com.github.martiply" % "java-martiply-model" % "7a4d87e"
-libraryDependencies += "com.github.martiply" % "java-martiply-table" % "a22ad24"
+libraryDependencies += "com.github.martiply" % "java-martiply-model" % "3ca3216"
+libraryDependencies += "com.github.martiply" % "java-martiply-table" % "b159cc6"
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard

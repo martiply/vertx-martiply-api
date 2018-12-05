@@ -1,3 +1,8 @@
+0.2.4
+- changed get to typed get
+- all ts columns are now Long
+- updated model (img's url not img's path)
+
 0.2.3
 - added did (deviceid) and apikey params
 

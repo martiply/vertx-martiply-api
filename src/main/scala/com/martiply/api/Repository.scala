@@ -51,7 +51,7 @@ object Repository {
        |
        |standard_id, standard.ownerId, standard.idType, standard.gtin, standard.idCustom, standard.brand,
        |standard_name, standard.cond, standard.category, standard.price, standard.description, standard.url,
-       |standard.hit, sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd, urli, urls,
+       |standard.hit, sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd, pathi, paths,
        |score,
        |
        |ST_Distance_Sphere(point(?, ?), geo) as distance_in_meters FROM store AS store
@@ -66,8 +66,8 @@ object Repository {
        |LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd
        |  FROM standard_sale WHERE standard_sale.saleStart < ? AND standard_sale.saleEnd > ? ) AS standard_sale
        |  ON standard_id = sale_id
-       |LEFT JOIN (SELECT img_standard.id, GROUP_CONCAT(img_standard.url) urli FROM img_standard GROUP BY img_standard.id) as img_standard ON img_standard.id = standard_id
-       |LEFT JOIN (SELECT img_store.storeId, GROUP_CONCAT( img_store.url) urls FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId
+       |LEFT JOIN (SELECT img_standard.id, GROUP_CONCAT(img_standard.path ORDER BY ts ASC) pathi FROM img_standard GROUP BY img_standard.id) as img_standard ON img_standard.id = standard_id
+       |LEFT JOIN (SELECT img_store.storeId, GROUP_CONCAT( img_store.path ORDER BY ts ASC) paths FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId
        |
        |WHERE ST_Within(geo, ST_Buffer(POINT(?, ?), 0.020)) ORDER BY distance_in_meters, score LIMIT $limit) AS d
      """.stripMargin
@@ -75,66 +75,66 @@ object Repository {
 
   val qsSearchStoreKeyword: Int => String = (limit: Int ) =>
     s"""
-       |SELECT standard.*, standard_sale.*, store.currency, CONCAT(urli) AS urli, MATCH (standard.name, standard.category, standard.brand) AGAINST (?) as score FROM inventory
+       |SELECT standard.*, standard_sale.*, store.currency, CONCAT(pathi) AS pathi, MATCH (standard.name, standard.category, standard.brand) AGAINST (?) as score FROM inventory
        |JOIN store ON inventory.storeId = store.storeId
        |JOIN standard ON inventory.id = standard.id
        |LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd FROM standard_sale WHERE standard_sale.saleStart < ? AND standard_sale.saleEnd > ?) AS standard_sale ON standard.id = sale_id
-       |LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.url) urli FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
+       |LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.path ORDER BY ts) pathi FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
        |WHERE inventory.storeId = ? AND MATCH (standard.name, standard.category, standard.brand) AGAINST (?) ORDER BY score DESC LIMIT $limit
      """.stripMargin
 
   val qsSearchStoreRandom: Int => String = (limit: Int) =>
     s"""
-       |SELECT standard.*, standard_sale.*, store.currency, CONCAT(urli) AS urli FROM inventory
+       |SELECT standard.*, standard_sale.*, store.currency, CONCAT(pathi) AS pathi FROM inventory
        |JOIN store ON inventory.storeId = store.storeId
        |JOIN standard ON inventory.id = standard.id
        |LEFT JOIN (SELECT standard_sale.id as sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd FROM standard_sale WHERE standard_sale.saleStart < ? AND standard_sale.saleEnd > ?) AS standard_sale ON standard.id = sale_id
-       |LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.url) urli FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
+       |LEFT JOIN (SELECT id, GROUP_CONCAT(img_standard.path ORDER BY ts ASC) pathi FROM img_standard GROUP BY id) AS img_standard ON inventory.id = img_standard.id
        |WHERE inventory.storeId = ? ORDER BY RAND() LIMIT $limit
      """.stripMargin
 
 
   val qsGetStores: Int => String = (limit: Int ) =>
     s"""
-       |SELECT storeId, name, astext(geo) as geo, currency, email, zip, address, city, phone, open, close, story, tz, urls, distance_in_meters
-       |FROM (SELECT store.*, CONCAT(urls) AS urls, ST_Distance_Sphere(point(?, ?), geo) as distance_in_meters FROM store AS store
-       |LEFT JOIN (SELECT storeId, GROUP_CONCAT(url) urls FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId) AS img_store
+       |SELECT storeId, name, astext(geo) as geo, currency, email, zip, address, city, phone, open, close, story, tz, paths, distance_in_meters
+       |FROM (SELECT store.*, CONCAT(paths) AS paths, ST_Distance_Sphere(point(?, ?), geo) as distance_in_meters FROM store AS store
+       |LEFT JOIN (SELECT storeId, GROUP_CONCAT(path ORDER BY ts ASC) paths FROM img_store GROUP BY img_store.storeId) as img_store ON img_store.storeId = store.storeId) AS img_store
        |WHERE ST_Within(geo, ST_Buffer(POINT(?, ?), 0.020)) ORDER BY distance_in_meters LIMIT $limit
      """.stripMargin
 
   val qsGetStore: String =
     s"""
-       |SELECT storeId, name, astext(geo) as geo, currency, email, zip, address, city, phone, open, close, story, tz, urls FROM store
-       |LEFT JOIN (SELECT storeId AS store_id, GROUP_CONCAT(url) urls FROM img_store GROUP BY img_store.storeId)  AS img_store ON img_store.store_id = store.storeId
+       |SELECT storeId, name, astext(geo) as geo, currency, email, zip, address, city, phone, open, close, story, tz, paths FROM store
+       |LEFT JOIN (SELECT storeId AS store_id, GROUP_CONCAT(path ORDER BY ts ASC) paths FROM img_store GROUP BY img_store.storeId)  AS img_store ON img_store.store_id = store.storeId
        |WHERE storeId = ?
      """.stripMargin
 
   def saleFrom(r: ArrayRowData, saleIdAlias: String = "sale_id"): Option[Sale] = {
     if (r.get(saleIdAlias) != null) {
-      Some(Sale(r.get(saleIdAlias).asInstanceOf[String], r.get(TableStandardSale.SALE_PRICE).asInstanceOf[Float], r.get(TableStandardSale.SALE_START).asInstanceOf[Long], r.get(TableStandardSale.SALE_END).asInstanceOf[Long]))
+      Some(Sale(r.getString(saleIdAlias), r.getFloat(TableStandardSale.SALE_PRICE), r.getLong(TableStandardSale.SALE_START), r.getLong(TableStandardSale.SALE_END)))
     } else {
       None
     }
   }
 
   def imgFrom(r: ArrayRowData, imgAlias: String, imgHost: String, root: Root): Option[Img] =
-    Option(r.get(imgAlias)) match {
-      case Some(s) => Some(Img(s.asInstanceOf[String].split(",").toList, imgHost, root))
+    Option(r.getString(imgAlias)) match {
+      case Some(s) => Some(Img(s.split(",").toList, imgHost, root))
       case _ => None
     }
 
   def itemFrom(r: ArrayRowData, sale: Option[Sale], img: Option[Img],  standardIdAlias: String, standardNameAlias: String): Item =
-    Item(r.get(standardIdAlias).asInstanceOf[String], r.get(TableStandard.OWNER_ID).asInstanceOf[Int], Item.findIdType(r.get(TableStandard.ID_TYPE).asInstanceOf[String]).getOrElse(IdType.custom),
-      r.get(TableStandard.ID_CUSTOM).asInstanceOf[String], r.get(TableStandard.GTIN).asInstanceOf[String], r.get(standardNameAlias).asInstanceOf[String], r.get(TableStandard.PRICE).asInstanceOf[Float], Item.findCategory(r.get(TableStandard.CATEGORY).asInstanceOf[String]).getOrElse(Category.product),
-      r.get(TableStandard.BRAND).asInstanceOf[String], Item.findCondition(r.get(TableStandard.COND).asInstanceOf[String]).getOrElse(Condition.NEW), r.get(TableStandard.DESCRIPTION).asInstanceOf[String], r.get(TableStandard.URL).asInstanceOf[String],
-      img.orNull, r.get(TableStandard.HIT).asInstanceOf[Int], sale, None)
+    Item(r.getString(standardIdAlias), r.getInt(TableStandard.OWNER_ID), Item.findIdType(r.getString(TableStandard.ID_TYPE)).getOrElse(IdType.custom),
+      r.getString(TableStandard.ID_CUSTOM), r.getString(TableStandard.GTIN), r.getString(standardNameAlias), r.getFloat(TableStandard.PRICE), Item.findCategory(r.getString(TableStandard.CATEGORY)).getOrElse(Category.product),
+      r.getString(TableStandard.BRAND), Item.findCondition(r.getString(TableStandard.COND)).getOrElse(Condition.NEW), r.getString(TableStandard.DESCRIPTION), r.getString(TableStandard.URL),
+      img.orNull, r.getInt(TableStandard.HIT), sale, None)
 
   def storeFrom(r: ArrayRowData, img: Option[Img], distance: Option[Double], geoAlias: String = "geo"): Store ={
-    val lnglat = Store.toLngLat(r.get(geoAlias).asInstanceOf[String])
-    Store(r.get(TableStore.STORE_ID).asInstanceOf[Int], r.get(TableStore.NAME).asInstanceOf[String], r.get(TableStore.ZIP).asInstanceOf[String], r.get(TableStore.ADDRESS).asInstanceOf[String],
-      r.get(TableStore.EMAIL).asInstanceOf[String], r.get(TableStore.PHONE).asInstanceOf[String], lnglat.head, lnglat(1),
-      r.get(TableStore.OPEN).asInstanceOf[String], r.get(TableStore.CLOSE).asInstanceOf[String], distance, r.get(TableStore.STORY).asInstanceOf[String],
-      r.get(TableStore.CURRENCY).asInstanceOf[String], r.get(TableStore.TZ).asInstanceOf[Byte].toString.toInt, r.get(TableStore.CITY).asInstanceOf[String], img.orNull)
+    val lnglat = Store.toLngLat(r.getString(geoAlias))
+    Store(r.getInt(TableStore.STORE_ID), r.getString(TableStore.NAME), r.getString(TableStore.ZIP), r.getString(TableStore.ADDRESS),
+      r.getString(TableStore.EMAIL), r.getString(TableStore.PHONE), lnglat.head, lnglat(1),
+      r.getString(TableStore.OPEN), r.getString(TableStore.CLOSE), distance, r.getString(TableStore.STORY),
+      r.getString(TableStore.CURRENCY), r.getByte(TableStore.TZ).toString.toInt, r.getString(TableStore.CITY), img.orNull)
   }
 
 }
@@ -173,11 +173,11 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgItem  = Repository.imgFrom(r, "urli", imgHost, Root.i)
+          val imgItem  = Repository.imgFrom(r, "pathi", imgHost, Root.i)
           val sale     = Repository.saleFrom(r)
           val item     = Repository.itemFrom(r, sale, imgItem, "standard_id", "standard_name")
-          val imgStore = Repository.imgFrom(r, "urls", imgHost, Root.store)
-          val distance = Some(r.get("distance_in_meters").asInstanceOf[Double])
+          val imgStore = Repository.imgFrom(r, "paths", imgHost, Root.store)
+          val distance = Some(r.getDouble("distance_in_meters").doubleValue())
           val store    = Repository.storeFrom(r, imgStore, distance)
           IPP(item, store)
         }).toList
@@ -194,8 +194,8 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgStores = Repository.imgFrom(r, "urls", imgHost, Root.store)
-          val distance  = Some(r.get("distance_in_meters").asInstanceOf[Double])
+          val imgStores = Repository.imgFrom(r, "paths", imgHost, Root.store)
+          val distance  = Some(r.getDouble("distance_in_meters").doubleValue())
           Repository.storeFrom(r, imgStores, distance)
         }).toList
         MtpResponse.success(res)
@@ -210,7 +210,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgStores = Repository.imgFrom(r, "urls", imgHost, Root.store)
+          val imgStores = Repository.imgFrom(r, "paths", imgHost, Root.store)
           val distance  = None
           Repository.storeFrom(r, imgStores, distance)
         }).toList
@@ -238,7 +238,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))
       fpar <- Future {
         val res = fque.getRows.stream().toArray().map(_.asInstanceOf[ArrayRowData]).map(r => {
-          val imgItem = Repository.imgFrom(r, "urli", imgHost, Root.i)
+          val imgItem = Repository.imgFrom(r, "pathi", imgHost, Root.i)
           val sale    = Repository.saleFrom(r)
           Repository.itemFrom(r, sale, imgItem, TableStandard.ID, TableStandard.NAME)
         }).toList
