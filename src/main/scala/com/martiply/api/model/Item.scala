@@ -6,7 +6,7 @@ import com.martiply.model.interfaces.{AbsImg, IApparelExtension, IItem, ISale}
 
 object Item {
 
-  def apply(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: Float, category: Category, brand: String,
+  def apply(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: String, category: Category, brand: String,
             condition: Condition, description: String, url: String, img: Img, hits: Int, sale: Option[Sale], apparelExtension: Option[ApparelExtension]): Item =
     new Item(id, ownerId, idType, idCustom, gtin, name, price, category, brand, condition, description, url, img, hits, sale.orNull, apparelExtension.orNull)
 
@@ -20,7 +20,7 @@ object Item {
 
 }
 
-class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: Float, category: Category, brand: String,
+class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: String, category: Category, brand: String,
            condition: Condition, description: String, url: String, img: Img, hits: Int,
            sale: Sale,
            @JsonProperty(defaultValueToOmit = "null") apparelExtension: ApparelExtension) extends IItem{
@@ -55,5 +55,5 @@ class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: Str
 
   override def getImg: AbsImg = img
 
-  override def getPrice: Float = price
+  override def getPrice: String = price
 }

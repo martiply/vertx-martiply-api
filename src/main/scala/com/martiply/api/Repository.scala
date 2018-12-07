@@ -17,6 +17,7 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.math.BigDecimal.RoundingMode
 
 object Repository {
   def apply(mySqlConf: JsonObject, imgHost: String): Repository = {
@@ -111,7 +112,7 @@ object Repository {
 
   def saleFrom(r: ArrayRowData, saleIdAlias: String = "sale_id"): Option[Sale] = {
     if (r.get(saleIdAlias) != null) {
-      Some(Sale(r.getString(saleIdAlias), r.getFloat(TableStandardSale.SALE_PRICE), r.getLong(TableStandardSale.SALE_START), r.getLong(TableStandardSale.SALE_END)))
+      Some(Sale(r.getString(saleIdAlias), stringPrice(r.get(TableStandardSale.SALE_PRICE).asInstanceOf[java.math.BigDecimal]), r.getLong(TableStandardSale.SALE_START), r.getLong(TableStandardSale.SALE_END)))
     } else {
       None
     }
@@ -125,7 +126,7 @@ object Repository {
 
   def itemFrom(r: ArrayRowData, sale: Option[Sale], img: Option[Img],  standardIdAlias: String, standardNameAlias: String): Item =
     Item(r.getString(standardIdAlias), r.getInt(TableStandard.OWNER_ID), Item.findIdType(r.getString(TableStandard.ID_TYPE)).getOrElse(IdType.custom),
-      r.getString(TableStandard.ID_CUSTOM), r.getString(TableStandard.GTIN), r.getString(standardNameAlias), r.getFloat(TableStandard.PRICE), Item.findCategory(r.getString(TableStandard.CATEGORY)).getOrElse(Category.product),
+      r.getString(TableStandard.ID_CUSTOM), r.getString(TableStandard.GTIN), r.getString(standardNameAlias), stringPrice(r.get(TableStandard.PRICE).asInstanceOf[java.math.BigDecimal]), Item.findCategory(r.getString(TableStandard.CATEGORY)).getOrElse(Category.product),
       r.getString(TableStandard.BRAND), Item.findCondition(r.getString(TableStandard.COND)).getOrElse(Condition.NEW), r.getString(TableStandard.DESCRIPTION), r.getString(TableStandard.URL),
       img.orNull, r.getInt(TableStandard.HIT), sale, None)
 
@@ -136,6 +137,8 @@ object Repository {
       r.getString(TableStore.OPEN), r.getString(TableStore.CLOSE), distance, r.getString(TableStore.STORY),
       r.getString(TableStore.CURRENCY), r.getByte(TableStore.TZ).toString.toInt, r.getString(TableStore.CITY), img.orNull)
   }
+
+  def stringPrice(price: java.math.BigDecimal): String = BigDecimal(price).setScale(2, RoundingMode.HALF_EVEN).bigDecimal.toPlainString
 
 }
 

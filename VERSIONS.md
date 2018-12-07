@@ -1,3 +1,6 @@
+0.2.5
+- price response is now String, handled with BigDecimal
+
 0.2.4
 - changed get to typed get
 - all ts columns are now Long
