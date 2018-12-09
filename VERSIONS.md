@@ -1,3 +1,6 @@
+0.2.6
+- updated Martiply model
+
 0.2.5
 - price response is now String, handled with BigDecimal
 
