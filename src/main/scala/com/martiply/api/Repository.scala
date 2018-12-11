@@ -9,7 +9,7 @@ import com.github.jasync.sql.db.pool.{ConnectionPool, PoolConfiguration}
 import com.github.jasync.sql.db.{Configuration, Connection, SSLConfiguration}
 import com.martiply.api.model._
 import com.martiply.model.interfaces.AbsImg.Root
-import com.martiply.model.interfaces.IItem.{Category, Condition, IdType}
+import com.martiply.model.interfaces.IItem.{Condition, IdType}
 import com.martiply.table._
 import io.vertx.core.json.JsonObject
 
@@ -126,7 +126,7 @@ object Repository {
 
   def itemFrom(r: ArrayRowData, sale: Option[Sale], img: Option[Img],  standardIdAlias: String, standardNameAlias: String): Item =
     Item(r.getString(standardIdAlias), r.getInt(TableStandard.OWNER_ID), Item.findIdType(r.getString(TableStandard.ID_TYPE)).getOrElse(IdType.custom),
-      r.getString(TableStandard.ID_CUSTOM), r.getString(TableStandard.GTIN), r.getString(standardNameAlias), stringPrice(r.get(TableStandard.PRICE).asInstanceOf[java.math.BigDecimal]), Item.findCategory(r.getString(TableStandard.CATEGORY)).getOrElse(Category.product),
+      r.getString(TableStandard.ID_CUSTOM), r.getString(TableStandard.GTIN), r.getString(standardNameAlias), stringPrice(r.get(TableStandard.PRICE).asInstanceOf[java.math.BigDecimal]), r.getString(TableStandard.CATEGORY),
       r.getString(TableStandard.BRAND), Item.findCondition(r.getString(TableStandard.COND)).getOrElse(Condition.NEW), r.getString(TableStandard.DESCRIPTION), r.getString(TableStandard.URL),
       img.orNull, r.getInt(TableStandard.HIT), sale, None)
 
@@ -160,7 +160,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
     } yield ffin
   }
 
-  def search(kwd: String, lat: Double, lng: Double, legitSaleTs: Long, category: Option[Category]): Future[MtpResponse[IPP]] = {
+  def search(kwd: String, lat: Double, lng: Double, legitSaleTs: Long, rootCategory: Option[String]): Future[MtpResponse[IPP]] = {
     val params = Seq(
       lng,
       lat,
@@ -171,6 +171,7 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
       lng,
       lat
     )
+    // rootCategory is from android dropdown-specify search by root category.
     val sql = Repository.qsSearchArea(limit)
     for {
       fque <- FutureConverters.toScala(client.sendPreparedStatement(sql, params.asJava))

@@ -1,3 +1,6 @@
+0.2.7
+- changed Category enum to String
+
 0.2.6
 - updated Martiply model
 

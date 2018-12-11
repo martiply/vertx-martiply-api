@@ -64,7 +64,7 @@ object Application extends App {
             val kwd = req.getParam("keyword")
             val lat = req.getParam("lat").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -90 && v <= 90)
             val lng = req.getParam("lng").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -180 && v <= 180)
-            val cat = req.getParam("category").flatMap(Item.findCategory)
+            val cat = req.getParam("category")
             val did = req.getParam("did")
             val apk = req.getParam("apikey")
 
