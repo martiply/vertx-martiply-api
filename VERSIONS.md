@@ -1,3 +1,10 @@
+0.2.9
+- fixed idType remains
+
+0.2.8
+- removed idType
+- updated tables
+
 0.2.7
 - changed Category enum to String
 

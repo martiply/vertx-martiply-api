@@ -1,23 +1,22 @@
 package com.martiply.api.model
 
 import com.jsoniter.annotation.JsonProperty
-import com.martiply.model.interfaces.IItem.{Condition, IdType}
+import com.martiply.model.interfaces.IItem.Condition
 import com.martiply.model.interfaces.{AbsImg, IApparelExtension, IItem, ISale}
 
 object Item {
 
-  def apply(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: String, category: String, brand: String,
+  def apply(id: String, ownerId: Int, idCustom: String, gtin: String, name: String, price: String, category: String, brand: String,
             condition: Condition, description: String, url: String, img: Img, hits: Int, sale: Option[Sale], apparelExtension: Option[ApparelExtension]): Item =
-    new Item(id, ownerId, idType, idCustom, gtin, name, price, category, brand, condition, description, url, img, hits, sale.orNull, apparelExtension.orNull)
+    new Item(id, ownerId, idCustom, gtin, name, price, category, brand, condition, description, url, img, hits, sale.orNull, apparelExtension.orNull)
 
-  def findIdType(in: String) : Option[IdType] = IdType.values().find(_.toString == in)
 
   def findCondition(in: String): Option[Condition] = Condition.values().find(_.toString == in)
 
 
 }
 
-class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: String, name: String, price: String, category: String, brand: String,
+class Item(id: String, ownerId: Int, idCustom: String, gtin: String, name: String, price: String, category: String, brand: String,
            condition: Condition, description: String, url: String, img: Img, hits: Int,
            sale: Sale,
            @JsonProperty(defaultValueToOmit = "null") apparelExtension: ApparelExtension) extends IItem{
@@ -37,8 +36,6 @@ class Item(id: String, ownerId: Int, idType: IdType, idCustom: String, gtin: Str
   override def getCategory: String = category
 
   override def getBrand: String = brand
-
-  override def getIdType: IItem.IdType = idType
 
   override def getHits: Int = hits
 

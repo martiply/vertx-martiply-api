@@ -9,7 +9,7 @@ import com.github.jasync.sql.db.pool.{ConnectionPool, PoolConfiguration}
 import com.github.jasync.sql.db.{Configuration, Connection, SSLConfiguration}
 import com.martiply.api.model._
 import com.martiply.model.interfaces.AbsImg.Root
-import com.martiply.model.interfaces.IItem.{Condition, IdType}
+import com.martiply.model.interfaces.IItem.Condition
 import com.martiply.table._
 import io.vertx.core.json.JsonObject
 
@@ -50,7 +50,7 @@ object Repository {
        |store.email, store.zip, store.address, store.city, store.phone, store.open, store.close,
        |store.story, store.tz,
        |
-       |standard_id, standard.ownerId, standard.idType, standard.gtin, standard.idCustom, standard.brand,
+       |standard_id, standard.ownerId, standard.gtin, standard.idCustom, standard.brand,
        |standard_name, standard.cond, standard.category, standard.price, standard.description, standard.url,
        |standard.hit, sale_id, standard_sale.salePrice, standard_sale.saleStart, standard_sale.saleEnd, pathi, paths,
        |score,
@@ -58,7 +58,7 @@ object Repository {
        |ST_Distance_Sphere(point(?, ?), geo) as distance_in_meters FROM store AS store
        |
        |JOIN inventory ON inventory.storeId = store.storeId
-       |JOIN (SELECT standard.id AS standard_id, standard.ownerId, standard.idType, standard.gtin,
+       |JOIN (SELECT standard.id AS standard_id, standard.ownerId, standard.gtin,
        |  standard.idCustom, standard.brand, standard.name AS standard_name, standard.cond, standard.category,
        |  standard.price, standard.description, standard.url, standard.hit,
        |  MATCH (standard.name, standard.category, standard.brand) AGAINST(?) as score FROM standard
@@ -125,7 +125,7 @@ object Repository {
     }
 
   def itemFrom(r: ArrayRowData, sale: Option[Sale], img: Option[Img],  standardIdAlias: String, standardNameAlias: String): Item =
-    Item(r.getString(standardIdAlias), r.getInt(TableStandard.OWNER_ID), Item.findIdType(r.getString(TableStandard.ID_TYPE)).getOrElse(IdType.custom),
+    Item(r.getString(standardIdAlias), r.getInt(TableStandard.OWNER_ID),
       r.getString(TableStandard.ID_CUSTOM), r.getString(TableStandard.GTIN), r.getString(standardNameAlias), stringPrice(r.get(TableStandard.PRICE).asInstanceOf[java.math.BigDecimal]), r.getString(TableStandard.CATEGORY),
       r.getString(TableStandard.BRAND), Item.findCondition(r.getString(TableStandard.COND)).getOrElse(Condition.NEW), r.getString(TableStandard.DESCRIPTION), r.getString(TableStandard.URL),
       img.orNull, r.getInt(TableStandard.HIT), sale, None)
@@ -221,7 +221,6 @@ class Repository(client: ConnectionPool[MySQLConnection], queryCfg: JsonObject, 
         MtpResponse.success(res)
       }
     } yield fpar
-
   }
 
 
