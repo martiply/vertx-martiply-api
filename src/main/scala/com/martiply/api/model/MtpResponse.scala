@@ -31,7 +31,7 @@ class MtpResponse[A](
      success: Boolean,
     @JsonProperty(defaultValueToOmit = "null") error: String,
     @JsonProperty(nullable = true) data: util.List[A]
-  ) extends IMtpResponse[A] {
+  ) extends IMtpResponse {
 
   override def isSuccess: Boolean = success
 

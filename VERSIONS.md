@@ -1,3 +1,6 @@
+0.3.2
+- updated model
+
 0.3.1
 - updated model
 
