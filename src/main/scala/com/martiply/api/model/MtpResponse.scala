@@ -35,7 +35,7 @@ class MtpResponse[A](
 
   override def isSuccess: Boolean = success
 
-  override def getError: String = error
+  def getError: String = error
 
   def getData: util.List[A] = data
 
