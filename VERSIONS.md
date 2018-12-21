@@ -1,3 +1,6 @@
+0.3.0
+- updated model
+
 0.2.9
 - fixed idType remains
 

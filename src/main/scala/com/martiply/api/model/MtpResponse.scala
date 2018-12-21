@@ -37,6 +37,6 @@ class MtpResponse[A](
 
   override def getError: String = error
 
-  override def getData: util.List[A] = data
+  def getData: util.List[A] = data
 
 }
