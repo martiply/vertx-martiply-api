@@ -3,7 +3,6 @@ package com.martiply.api.model
 import java.util
 
 import com.jsoniter.annotation.JsonProperty
-import com.martiply.api.model.MtpResponse.ErrorEnum.ErrorEnum
 import com.martiply.model.interfaces.IMtpResponse
 
 import scala.collection.JavaConverters._
@@ -16,14 +15,7 @@ object MtpResponse {
 
   def success[A](data: List[A]): MtpResponse[A] = MtpResponse[A](success = true, error = null, Some(data))
 
-  def error(error: ErrorEnum): MtpResponse[Nothing] =  MtpResponse[Nothing](success = false, error.toString, None)
-
-  object ErrorEnum extends Enumeration {
-    type ErrorEnum = Value
-    val invalidParam = Value("Incorrect parameter(s)")
-    val unknownApi = Value("Unknown path or parameter")
-    val dbError = Value("Database error")
-  }
+  def error(error: String): MtpResponse[Nothing] = MtpResponse[Nothing](success = false, error, None)
 
 }
 

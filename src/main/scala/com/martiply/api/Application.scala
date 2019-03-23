@@ -1,17 +1,17 @@
 package com.martiply.api
 
+import java.sql.SQLException
 import java.util.TimeZone
 
 import com.jsoniter.output.JsonStream
-import com.martiply.api.model.MtpResponse.ErrorEnum
-import com.martiply.api.model.MtpResponse.ErrorEnum.ErrorEnum
-import com.martiply.api.model.{Item, MtpResponse}
+import com.martiply.api.model.MtpResponse
 import io.vertx.lang.scala.ScalaVerticle
 import io.vertx.scala.config.ConfigRetriever
 import io.vertx.scala.core.http.HttpServerRequest
 import io.vertx.scala.core.{DeploymentOptions, Vertx}
 import me.mbcu.scala.{MyLogging, MyLoggingSingle}
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 object Application extends App {
@@ -46,6 +46,7 @@ object Application extends App {
       System.exit(0)
   }
 
+
   class ServerVerticle extends ScalaVerticle with MyLogging {
 
     override def start(): Unit = {
@@ -61,61 +62,71 @@ object Application extends App {
           case p if p.contains("/") =>   req.response().end("{\"message\":\"Martiply API\"}")
 
           case p if p contains cPaths.getString("SEARCH_AREA_KEYWORD") =>
-            val kwd = req.getParam("keyword")
-            val lat = req.getParam("lat").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -90 && v <= 90)
-            val lng = req.getParam("lng").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -180 && v <= 180)
-            val cat = req.getParam("category")
-            val did = req.getParam("did")
-            val apk = req.getParam("apikey")
-
-            (kwd, lat, lng) match {
-              case (Some(kw), Some(lt), Some(ln)) => rep.get.search(kw, lt, ln, legitSaleTs, cat) map (z => jSuccess(req, z)) recover { case e => logPipe(req, e)}
-              case _ => jError(req, ErrorEnum.invalidParam)
-            }
+            val f = for {
+              fini <- Future {
+                val kwd = req.getParam("keyword")
+                val lat = req.getParam("lat").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -90 && v <= 90)
+                val lng = req.getParam("lng").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -180 && v <= 180)
+                val cat = req.getParam("category")
+                val did = req.getParam("did")
+                val apk = req.getParam("apikey")
+                (kwd, lat, lng, cat, did, apk)
+              }
+              fque <- rep.get.search(fini._1.get, fini._2.get, fini._3.get, legitSaleTs, fini._4)
+            } yield fque
+            f map(p => jSuccess(req, p)) recover { case e => jError(req, e) }
 
           case p if p contains cPaths.getString("SEARCH_STORE_KEYWORD") =>
-            val kwd = req.getParam("keyword")
-            val sid = req.getParam("storeid").flatMap(v=> Try(v.toInt).toOption)
-            val did = req.getParam("did")
-            val apk = req.getParam("apikey")
-
-            (kwd, sid) match {
-              case (Some(kw), Some(sd)) => rep.get.searchStoreKeyword(kw, sd, legitSaleTs) map (z => jSuccess(req, z)) recover { case e => logPipe(req, e)}
-              case _ => jError(req, ErrorEnum.invalidParam)
-            }
+            val f = for {
+              fini <- Future {
+                val kwd = req.getParam("keyword")
+                val sid = req.getParam("storeid").flatMap(v=> Try(v.toInt).toOption)
+                val did = req.getParam("did")
+                val apk = req.getParam("apikey")
+                (kwd, sid, did, apk)
+              }
+              fque <- rep.get.searchStoreKeyword(fini._1.get, fini._2.get, legitSaleTs)
+            } yield fque
+            f map(p => jSuccess(req, p)) recover { case e => jError(req, e) }
 
           case p if p contains cPaths.getString("SEARCH_STORE_RANDOM") =>
-            val sid = req.getParam("storeid").flatMap(v=> Try(v.toInt).toOption)
-            val did = req.getParam("did")
-            val apk = req.getParam("apikey")
-
-            sid match {
-              case Some(sd) => rep.get.searchStoreRandom(sd, legitSaleTs) map (z => jSuccess(req, z)) recover { case e => logPipe(req, e)}
-              case _ => jError(req, ErrorEnum.invalidParam)
-            }
+            val f = for {
+              fini <- Future {
+                val sid = req.getParam("storeid").flatMap(v=> Try(v.toInt).toOption)
+                val did = req.getParam("did")
+                val apk = req.getParam("apikey")
+                (sid, did, apk)
+              }
+              fque <-  rep.get.searchStoreRandom(fini._1.get, legitSaleTs)
+            } yield fque
+            f map(p => jSuccess(req, p)) recover { case e => jError(req, e) }
 
           case p if p contains cPaths.getString("GET_AREA_STORES") =>
-            val lat = req.getParam("lat").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -90 && v <= 90)
-            val lng = req.getParam("lng").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -180 && v <= 180)
-            val did = req.getParam("did")
-            val apk = req.getParam("apikey")
-
-            (lat, lng) match {
-              case (Some(lt), Some(ln)) =>  rep.get.getStores(lt, ln) map (z => jSuccess(req, z)) recover { case e => logPipe(req, e)}
-              case _ => jError(req, ErrorEnum.invalidParam)
-            }
+            val f = for {
+              fini <- Future {
+                val lat = req.getParam("lat").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -90 && v <= 90)
+                val lng = req.getParam("lng").flatMap(v=> Try(v.toDouble).toOption).filter(v => v >= -180 && v <= 180)
+                val did = req.getParam("did")
+                val apk = req.getParam("apikey")
+                (lat, lng, did, apk)
+              }
+              fque <- rep.get.getStores(fini._1.get, fini._2.get)
+            } yield fque
+            f map(p => jSuccess(req, p)) recover { case e => jError(req, e) }
 
           case p if p contains cPaths.getString("GET_STORE") =>
-            val sid = req.getParam("storeid").flatMap(v=> Try(v.toInt).toOption)
-            val did = req.getParam("did")
-            val apk = req.getParam("apikey")
+            val f = for {
+              fini <- Future {
+                val sid = req.getParam("storeid").flatMap(v=> Try(v.toInt).toOption)
+                val did = req.getParam("did")
+                val apk = req.getParam("apikey")
+                (sid, did, apk)
+              }
+              fque <- rep.get.getStore(fini._1.get)
+            } yield fque
+            f map(p => jSuccess(req, p)) recover { case e => jError(req, e) }
 
-            sid match {
-              case Some(sd) => rep.get.getStore(sd) map (z => jSuccess(req, z)) recover { case e => logPipe(req, e)}
-              case _ => jError(req, ErrorEnum.invalidParam)
-            }
-
-          case _ => jError(req, ErrorEnum.unknownApi)
+          case _ => jError(req, NoApiException())
 
         }
       })
@@ -129,12 +140,17 @@ object Application extends App {
 
     }
 
-    def logPipe(req: HttpServerRequest, e: Throwable) : Unit = {
-      error(e.getMessage)
-      jError(req, ErrorEnum.dbError)
+    case class NoApiException() extends Exception("Unknown path or parameter")
+
+    def handleException(e: Throwable): String = {
+      e match {
+        case t: NoSuchElementException => "Missing parameter or incorrect parameter"
+        case t: SQLException => "Database error"
+        case _ => "Unknown error"
+      }
     }
 
-    def jError(req: HttpServerRequest, errorEnum: ErrorEnum): Unit = req.response.end(JsonStream.serialize(MtpResponse.error(errorEnum)))
+    def jError(req: HttpServerRequest, throwable: Throwable): Unit = req.response.end(JsonStream.serialize(MtpResponse.error(handleException(throwable))))
 
     def jSuccess[A](req: HttpServerRequest, load: MtpResponse[A]): Unit =  req.response.end(JsonStream.serialize(load))
   }

@@ -1,3 +1,6 @@
+0.3.3
+- cleaned up for-comprehension
+
 0.3.2
 - updated model
 

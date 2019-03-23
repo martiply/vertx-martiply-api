@@ -2,7 +2,7 @@ import sbtassembly.PathList
 
 name := "vertx-martiply-api"
 
-version := "0.3.2"
+version := "0.3.3"
 
 scalaVersion := "2.12.7"
 lazy val vertxVersion = "3.5.4"
